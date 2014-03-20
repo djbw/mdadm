@@ -81,7 +81,8 @@
 					MPB_ATTRIB_RAID1           | \
 					MPB_ATTRIB_RAID10          | \
 					MPB_ATTRIB_RAID5           | \
-					MPB_ATTRIB_EXP_STRIPE_SIZE)
+					MPB_ATTRIB_EXP_STRIPE_SIZE | \
+					MPB_ATTRIB_NVM)
 
 /* Define attributes that are unused but not harmful */
 #define MPB_ATTRIB_IGNORED		(MPB_ATTRIB_NEVER_USE)
