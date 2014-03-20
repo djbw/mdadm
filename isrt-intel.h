@@ -43,6 +43,18 @@ enum {
 	NV_CACHE_MODE_DIS_SAFE     = 11, /* volume or NV cache not associated */
 };
 
+static inline int nvc_enabled(__u8 mode)
+{
+	switch (mode) {
+	case NV_CACHE_MODE_OFF:
+	case NV_CACHE_MODE_DIS_PERF:
+	case NV_CACHE_MODE_DIS_SAFE:
+		return 0;
+	default:
+		return 1;
+	}
+}
+
 struct segment_index_pair {
 	__u32 segment;
 	__u32 index;
