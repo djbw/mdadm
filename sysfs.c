@@ -638,7 +638,13 @@ int sysfs_set_array(struct mdinfo *info, int vers)
 	rv |= sysfs_set_num(info, NULL, "raid_disks", raid_disks);
 	rv |= sysfs_set_num(info, NULL, "chunk_size", info->array.chunk_size);
 	rv |= sysfs_set_num(info, NULL, "layout", info->array.layout);
-	rv |= sysfs_set_num(info, NULL, "component_size", info->component_size/2);
+	if (info->array.level == LEVEL_ISRT) {
+		/* FIXME: how do we support asymmetric component sizes for
+		 * external metadata?
+		 */
+		rv |= sysfs_set_num(info, NULL, "component_size", 0);
+	} else
+		rv |= sysfs_set_num(info, NULL, "component_size", info->component_size/2);
 	if (info->custom_array_size) {
 		int rc;
 

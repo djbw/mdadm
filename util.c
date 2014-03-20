@@ -362,6 +362,7 @@ int enough(int level, int raid_disks, int layout, int clean, char *avail)
 
 	case LEVEL_MULTIPATH:
 		return avail_disks>= 1;
+	case LEVEL_ISRT:
 	case LEVEL_LINEAR:
 	case 0:
 		return avail_disks == raid_disks;

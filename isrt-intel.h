@@ -28,6 +28,8 @@ enum {
 	NVC_SIG_LEN = 32,
 	ISRT_DEV_IDX = 0,
 	ISRT_TARGET_DEV_IDX = 1,
+	ISRT_ROLE_CACHE = 0,
+	ISRT_ROLE_TARGET = 1,
 
 	NV_CACHE_MODE_OFF          = 0,
 	NV_CACHE_MODE_OFF_TO_SAFE  = 1, /* powerfail recovery state */

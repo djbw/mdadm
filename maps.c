@@ -93,6 +93,7 @@ mapping_t pers[] = {
 	{ "10", 10},
 	{ "faulty", LEVEL_FAULTY},
 	{ "container", LEVEL_CONTAINER},
+	{ "isrt", LEVEL_ISRT },
 	{ NULL, 0}
 };
 

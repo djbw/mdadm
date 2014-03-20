@@ -1457,6 +1457,7 @@ char *xstrdup(const char *str);
 #define	LEVEL_MULTIPATH		(-4)
 #define	LEVEL_LINEAR		(-1)
 #define	LEVEL_FAULTY		(-5)
+#define	LEVEL_ISRT		(-12)
 
 /* kernel module doesn't know about these */
 #define LEVEL_CONTAINER		(-100)
