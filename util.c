@@ -1176,18 +1176,19 @@ int get_dev_size(int fd, char *dname, unsigned long long *sizep)
 }
 
 /* Return true if this can only be a container, not a member device.
- * i.e. is and md device and size is zero
+ * i.e. is and md device and the text_version matches an external
+ * metadata format
  */
 int must_be_container(int fd)
 {
-	unsigned long long size;
-	if (md_get_version(fd) < 0)
+	struct mdinfo *sra = sysfs_read(fd, NULL, GET_VERSION);
+	struct superswitch *ss;
+
+	if (!sra)
 		return 0;
-	if (get_dev_size(fd, NULL, &size) == 0)
-		return 1;
-	if (size == 0)
-		return 1;
-	return 0;
+	ss = version_to_superswitch(sra->text_version);
+	sysfs_free(sra);
+	return ss ? ss->external : 0;
 }
 
 /* Sets endofpart parameter to the last block used by the last GPT partition on the device.
