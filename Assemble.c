@@ -1147,16 +1147,17 @@ static int start_array(int mdfd,
 		if (sparecnt)
 			fprintf(stderr, " and %d spare%s", sparecnt, sparecnt==1?"":"s");
 		if (!enough(content->array.level, content->array.raid_disks,
-			    content->array.layout, 1, avail))
+			    content->array.layout, 1, avail)) {
 			fprintf(stderr, " - not enough to start the array.\n");
-		else if (!enough(content->array.level,
+			ioctl(mdfd, STOP_ARRAY, NULL);
+		} else if (!enough(content->array.level,
 				 content->array.raid_disks,
 				 content->array.layout, clean,
-				 avail))
+				 avail)) {
 			fprintf(stderr, " - not enough to start the "
 				"array while not clean - consider "
 				"--force.\n");
-		else {
+		} else {
 			if (req_cnt == (unsigned)content->array.raid_disks)
 				fprintf(stderr, " - need all %d to start it", req_cnt);
 			else
