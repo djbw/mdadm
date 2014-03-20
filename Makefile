@@ -127,7 +127,7 @@ CHECK_OBJS = restripe.o sysfs.o maps.o lib.o xmalloc.o dlink.o
 
 SRCS =  $(patsubst %.o,%.c,$(OBJS))
 
-INCL = mdadm.h part.h bitmap.h
+INCL = mdadm.h part.h bitmap.h isrt-intel.h platform-intel.h
 
 MON_OBJS = mdmon.o monitor.o managemon.o util.o maps.o mdstat.o sysfs.o \
 	policy.o lib.o \

@@ -22,6 +22,7 @@
 #include "mdmon.h"
 #include "sha1.h"
 #include "platform-intel.h"
+#include "isrt-intel.h"
 #include <values.h>
 #include <scsi/sg.h>
 #include <ctype.h>
@@ -39,7 +40,6 @@
 #define MPB_VERSION_CNG "1.2.06"
 #define MPB_VERSION_ATTRIBS "1.3.00"
 #define MAX_SIGNATURE_LENGTH  32
-#define MAX_RAID_SERIAL_LEN   16
 
 /* supports RAID0 */
 #define MPB_ATTRIB_RAID0		__cpu_to_le32(0x00000001)
@@ -179,6 +179,8 @@ struct imsm_dev {
 #define DEV_CLONE_N_GO		__cpu_to_le32(0x400)
 #define DEV_CLONE_MAN_SYNC	__cpu_to_le32(0x800)
 #define DEV_CNG_MASTER_DISK_NUM	__cpu_to_le32(0x1000)
+/* Volume is being used as NvCache for an accelerated volume */
+#define DEV_NVC_VOLUME          __cpu_to_le32(0x4000)
 	__u32 status;	/* Persistent RaidDev status */
 	__u32 reserved_blocks; /* Reserved blocks at beginning of volume */
 	__u8  migr_priority;
@@ -189,8 +191,18 @@ struct imsm_dev {
 	__u8  cng_state;
 	__u8  cng_sub_state;
 	__u16 dev_id;
+	__u8 nv_cache_mode;
+#define DEV_NVC_CLEAN		(0)
+#define DEV_NVC_DIRTY		(1)
+#define DEV_NVC_HEALTH_GOOD     (0 << 1)
+#define DEV_NVC_HEALTH_FAILED	(1 << 1)
+#define DEV_NVC_HEALTH_READONLY	(2 << 1)
+#define DEV_NVC_HEALTH_BACKUP	(3 << 1)
+	__u8 nv_cache_flags;
+	__u32 nvc_orig_family_num; /* Unique Volume Id of the cache */
+	__u16 nvc_dev_id;	   /* volume associated with this volume */
 	__u16 fill;
-	__u32 filler[9];
+	__u32 filler[7];
 	struct imsm_vol vol;
 } __attribute__ ((packed));
 
