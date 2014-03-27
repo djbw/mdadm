@@ -628,8 +628,9 @@ int sysfs_set_array(struct mdinfo *info, int vers)
 			return 1;
 		}
 	}
-	if (info->array.level < 0)
-		return 0; /* FIXME */
+	/* containers have no personality, they're rather bland */
+	if (info->array.level <= LEVEL_CONTAINER)
+		return 0;
 	rv |= sysfs_set_str(info, NULL, "level",
 			    map_num(pers, info->array.level));
 	if (info->reshape_active && info->delta_disks != UnSet)
