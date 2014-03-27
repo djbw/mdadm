@@ -30,6 +30,73 @@
 #endif
 #include	"md_u.h"
 #include	"md_p.h"
+
+struct array {
+	struct supertype *st;
+	struct mdinfo info;
+	void *devs;
+	struct array *next;
+	int spares;
+	int cache_leg;
+};
+
+static struct array *add_cache_legs(struct array *caches, struct supertype *st,
+				    struct mdinfo *info, struct array *arrays)
+{
+	struct mdinfo cache_info;
+	struct array *ap;
+	int i;
+
+	for (i = 1; i <= info->cache_legs; i++) {
+		/* in the case where the cache leg is assembled its uuid
+		 * may appear in the arrays list, so we need to check
+		 * both the caches list and the arrays list for
+		 * duplicates
+		 */
+		struct array *lists[] = { caches, arrays };
+		int j;
+
+		st->cache_leg = i;
+		st->ss->getinfo_super(st, &cache_info, NULL);
+		st->cache_leg = 0;
+		for (j = 0; j < 2; j++) {
+			for (ap = lists[j]; ap; ap = ap->next) {
+				if (st->ss == ap->st->ss
+				    && same_uuid(ap->info.uuid, cache_info.uuid,
+						 st->ss->swapuuid))
+					break;
+			}
+			if (ap)
+				break;
+		}
+		if (!ap) {
+			ap = xcalloc(1, sizeof(*ap));
+			ap->devs = dl_head();
+			ap->next = caches;
+			ap->st = st;
+			ap->cache_leg = i;
+			caches = ap;
+			memcpy(&ap->info, &cache_info, sizeof(cache_info));
+		}
+	}
+
+	return caches;
+}
+
+static void free_arrays(struct array *arrays)
+{
+	struct array *ap;
+
+	while (arrays) {
+		ap = arrays;
+		arrays = ap->next;
+
+		ap->st->ss->free_super(ap->st);
+		free(ap);
+	}
+}
+
+
 int Examine(struct mddev_dev *devlist,
 	    struct context *c,
 	    struct supertype *forcest)
@@ -54,14 +121,7 @@ int Examine(struct mddev_dev *devlist,
 	int fd;
 	int rv = 0;
 	int err = 0;
-
-	struct array {
-		struct supertype *st;
-		struct mdinfo info;
-		void *devs;
-		struct array *next;
-		int spares;
-	} *arrays = NULL;
+	struct array *arrays = NULL, *caches = NULL;
 
 	for (; devlist ; devlist = devlist->next) {
 		struct supertype *st;
@@ -131,13 +191,14 @@ int Examine(struct mddev_dev *devlist,
 					break;
 			}
 			if (!ap) {
-				ap = xmalloc(sizeof(*ap));
+				ap = xcalloc(1, sizeof(*ap));
 				ap->devs = dl_head();
 				ap->next = arrays;
-				ap->spares = 0;
 				ap->st = st;
 				arrays = ap;
 				st->ss->getinfo_super(st, &ap->info, NULL);
+				caches = add_cache_legs(caches, st, &ap->info,
+							arrays);
 			} else
 				st->ss->getinfo_super(st, &ap->info, NULL);
 			if (!have_container &&
@@ -179,11 +240,18 @@ int Examine(struct mddev_dev *devlist,
 					printf("\n");
 				ap->st->ss->brief_examine_subarrays(ap->st, c->verbose);
 			}
-			ap->st->ss->free_super(ap->st);
-			/* FIXME free ap */
 			if (ap->spares || c->verbose > 0)
 				printf("\n");
 		}
+		/* list container caches after their parent containers
+		 * and subarrays
+		 */
+		for (ap = caches; ap; ap = ap->next)
+			if (ap->st->ss->brief_examine_cache)
+				ap->st->ss->brief_examine_cache(ap->st, ap->cache_leg);
+		free_arrays(arrays);
+		free_arrays(caches);
+
 	}
 	return rv;
 }

@@ -233,6 +233,7 @@ struct mdinfo {
 	int container_enough; /* flag external handlers can set to
 			       * indicate that subarrays have not enough (-1),
 			       * enough to start (0), or all expected disks (1) */
+	int cache_legs; /* number of cross-container cache members in this 'array' */
 	char		sys_name[20];
 	struct mdinfo *devs;
 	struct mdinfo *next;
@@ -684,6 +685,7 @@ extern struct superswitch {
 	void (*examine_super)(struct supertype *st, char *homehost);
 	void (*brief_examine_super)(struct supertype *st, int verbose);
 	void (*brief_examine_subarrays)(struct supertype *st, int verbose);
+	void (*brief_examine_cache)(struct supertype *st, int cache);
 	void (*export_examine_super)(struct supertype *st);
 	int (*examine_badblocks)(struct supertype *st, int fd, char *devname);
 	int (*copy_metadata)(struct supertype *st, int from, int to);
@@ -1006,6 +1008,7 @@ struct supertype {
 				 Used when examining metadata to display content of disk
 				 when user has no hw/firmare compatible system.
 			      */
+	int cache_leg; /* hack to interrogate cache legs within containers */
 	struct metadata_update *updates;
 	struct metadata_update **update_tail;
 
